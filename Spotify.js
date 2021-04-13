@@ -2,7 +2,7 @@ var client_id = "f7ad4e2b25084a1daa232f35e6b3f63a";
 var client_secret = "2939b6dbf0d6499799b91ea75404b90b";
 var redirect_uri = "https://brave-meitner-66c283.netlify.app";
 function auth(){
-    var url = "https://accounts.spotify.com/authorize?client_id=f7ad4e2b25084a1daa232f35e6b3f63a&response_type=code&redirect_uri=https%3A%2F%2Fbrave-meitner-66c283.netlify.app&scope=user-read-private playlist-read-private playlist-read-collaborative";
+    var url = "https://accounts.spotify.com/authorize?client_id=f7ad4e2b25084a1daa232f35e6b3f63a&response_type=code&redirect_uri=https%3A%2F%2Fbrave-meitner-66c283.netlify.app%2F&scope=user-read-private playlist-read-private playlist-read-collaborative";
     window.location.href = url;
 }
 

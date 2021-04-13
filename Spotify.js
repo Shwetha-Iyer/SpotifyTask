@@ -1,8 +1,8 @@
 var client_id = "f7ad4e2b25084a1daa232f35e6b3f63a";
 var client_secret = "2939b6dbf0d6499799b91ea75404b90b";
-var redirect_uri = "https://brave-meitner-66c283.netlify.app";
+var redirect_uri = "http://127.0.0.1:5500/Tasks&Project/Spotify.html";
 function auth(){
-    var url = "https://accounts.spotify.com/authorize?client_id=f7ad4e2b25084a1daa232f35e6b3f63a&response_type=code&redirect_uri=https%3A%2F%2Fbrave-meitner-66c283.netlify.app%2F&scope=user-read-private playlist-read-private playlist-read-collaborative";
+    var url = "https://accounts.spotify.com/authorize?client_id=f7ad4e2b25084a1daa232f35e6b3f63a&response_type=code&redirect_uri=http%3A%2F%2F127.0.0.1%3A5500%2FTasks%26Project%2FSpotify.html&scope=user-read-private playlist-read-private playlist-read-collaborative";
     window.location.href = url;
 }
 

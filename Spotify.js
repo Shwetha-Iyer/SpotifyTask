@@ -1,105 +1,145 @@
-var client_id = "f7ad4e2b25084a1daa232f35e6b3f63a";
-var client_secret = "2939b6dbf0d6499799b91ea75404b90b";
-var redirect_uri = "https://brave-meitner-66c283.netlify.app";
-function auth(){
-    var url = `https://accounts.spotify.com/authorize?client_id=f7ad4e2b25084a1daa232f35e6b3f63a&response_type=code&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=user-read-private playlist-read-private playlist-read-collaborative`;
-    window.location.href = url;
+//var access_token="";
+function createTag(element, elementClass="",elementID=""){
+    var tag = document.createElement(element);
+    if(elementClass !== "")
+    tag.setAttribute("class",elementClass);
+    if(elementID !== "")
+    tag.setAttribute("id",elementID);
+    return tag;
 }
 
-
-function onPageLoad(){
-    let code = null;
-    const params = new URLSearchParams(window.location.search);
-    code =  params.get('code');
-    console.log(code);
-    let body = `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(redirect_uri)}&client_id=${client_id}&client_secret=${client_secret}`;
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST","https://accounts.spotify.com/api/token",true);
-    xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
-    xhr.setRequestHeader('Authorization','Basic '+ btoa(client_id+":"+client_secret));
-    xhr.send(body);
-    xhr.onload = handleAuthorizationResponse;
+async function getToken() {
+    try {
+      const clientId = "f7ad4e2b25084a1daa232f35e6b3f63a";
+      const clientSecret = "2939b6dbf0d6499799b91ea75404b90b";
+      const result = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: "Basic " + btoa(clientId + ":" + clientSecret),
+        },
+        body: "grant_type=client_credentials",
+      });
+      const data = await result.json();
+      //localStorage.setItem("access_token", data.access_token);
+      window.access_token = data.access_token;
+      //const accessToken = data.access_token;
+      getPlaylist(window.accessToken);
+      //getTrack(accessToken);
+    } catch (error) {
+      console.log(error);
+    }
 }
 
-function handleAuthorizationResponse(){
-    if ( this.status == 200 ){
-        var data = JSON.parse(this.responseText);
+async function getPlaylist(){
+    try{
+        var resp = await fetch(
+            "https://api.spotify.com/v1/users/qu9lafkb0qhg5caw8wnyt4x0d/playlists",
+            {
+                method: "GET",
+                headers: { Authorization: "Bearer " + window.access_token },
+            }
+        );
+        var data = await resp.json();
         console.log(data);
-        var data = JSON.parse(this.responseText);
-        if ( data.access_token != undefined ){
-            let access_token = data.access_token;
-            console.log("Access token");
-            console.log(access_token);
-            //localStorage.setItem("access_token", access_token);
-        
-        if ( data.refresh_token  != undefined ){
-            let refresh_token = data.refresh_token;
-            console.log("Refresh token");
-            console.log(refresh_token);
-            //localStorage.setItem("refresh_token", refresh_token);
+        var div = document.getElementById("play");
+        div.innerHTML="";
+        var container = createTag("div","container");
+        var row = createTag("div","row");
+        for(var i=0;i<data.items.length;i++){
+            var col = createTag("div","col-md-4");
+            col.setAttribute("style","margin-top:20px; margin-bottom:10px; padding-top:30px;");
+            var cardgroup = createTag("div","card-group h-100");
+            var card = createTag("div","card",data.items[i].id);
+            card.setAttribute("name",data.items[i].name);
+            card.setAttribute("style","background-color:black;border: 2px solid rgb(76, 173, 76);padding:5px;");
+            card.addEventListener("click",calltrack);
+            var img = createTag("img","card-img-top");
+            img.setAttribute("height","300px");
+            img.src = data.items[i].images[0].url;
+            var cardbody = createTag("div","card-body text-center");
+            var h5 = createTag("h5");
+            h5.innerText = data.items[i].name;
+            cardbody.append(h5);
+            card.append(img,cardbody);
+            cardgroup.append(card);
+            col.append(cardgroup);
+            row.append(col);
+            container.append(row);
+            div.append(container);
         }
-        callAPI(access_token);
     }
-        //onPageLoad();
-    }
-    else {
-        console.log(this.responseText);
-        console.log(this.responseText);
+    catch(error){
+        console.log(error);
     }
 }
+async function calltrack(){
+    console.log("Clicked");
+    console.log(this);
+    console.log(this.id);
+    console.log(this.textContent);
+    var div = document.getElementById("play");
+    div.innerHTML ="";
+    var h3 = createTag("h3");
+    h3.setAttribute("style","padding: 20px;");
+    h3.innerHTML = `You are looking at playlist: ${this.textContent}`;
+    container = createTag("div","container");
+    row = createTag("div","row");
+    col = createTag("div","col-12");
+    col.setAttribute("style","width:75%; padding-top: 40px;");
+    var table = createTag("table","table");
+    var thead = createTag("thead");
+    thead.setAttribute("style","color:white;");
+    var theadtr = createTag("tr");
+    var th1 = createTag("th");
+    th1.setAttribute("scope","col");
+    th1.innerText = "#";
+    var th2 = createTag("th");
+    th2.setAttribute("scope","col");
+    th2.innerText = "Track Name";
+    var th3 = createTag("th");
+    th3.setAttribute("scope","col");
+    th3.innerText = "Track Preview";
+    theadtr.append(th1,th2,th3);
+    thead.append(theadtr);
+    table.append(thead);
+    col.append(table);
+    row.append(col);
+    container.append(row);
+    div.append(h3,container);
+    var tbody = createTag("tbody");
+    tbody.setAttribute("style","color:white");
 
-function callAPI(access_token){
-    let xhr = new XMLHttpRequest();
-    xhr.open("GET","https://api.spotify.com/v1/me/playlists",true);
-    xhr.setRequestHeader('Content-Type','application/json');
-    xhr.setRequestHeader('Authorization','Bearer '+access_token);
-    xhr.send();
-    xhr.onload = playlist;
-}
+    try {
+        const result = await fetch(
+          `https://api.spotify.com/v1/playlists/${this.id}/tracks`,
+          {
+            method: "GET",
+            headers: { Authorization: "Bearer " + window.access_token },
+          }
+        );
+        const data = await result.json();
+        console.log(data);
+        for(i=0;i<data.items.length;i++){
+            var tr = createTag("tr");
+            var td1 = createTag("td");
+            td1.innerHTML = i+1;
+            var td2 = createTag("td");
+            td2.innerText = data.items[i].track.name;
+            var td3 = createTag("td");
+            var audio = createTag("audio");
+            audio.setAttribute("controls","");
+            var source = createTag("source");
+            source.setAttribute("src",data.items[i].track.preview_url);
+            audio.append(source);
+            td3.append(audio);
+            tr.append(td1,td2,td3);
+            tbody.append(tr);
+            table.append(tbody);
+        }
 
-function playlist(){
-    console.log("inside onload");
-    var div = document.createElement("div");
-    div.setAttribute("style","font-size:70px;color:white;text-align:center;");
-    div.innerHTML = "<br> My PlayList <br>";
-    
-    var data = JSON.parse(this.responseText);
-    console.log(data);
-    console.log(data.items[0]);
-    console.log(data.items[0].images[0]);
-    console.log(data.items[0].images[0].url);
-    var bo = document.getElementById("body");
-    bo.innerHTML = "";
-    document.body.append(div);
-    // var imglink = data.items[0].images[0].url;
-    // var img = document.createElement("img");
-    // img.setAttribute("src",imglink);
-    // document.body.append(img);
-    var container = document.createElement("div");
-    container.setAttribute("class","container");
-    var row = document.createElement("div");
-    row.setAttribute("class","row");
-    for(var i=0;i<data.items.length;i++){
-        var imglink = data.items[i].images[0].url;
-        var col = document.createElement("div");
-        col.setAttribute("class","col-sm-4");
-        col.setAttribute("style","margin-top:30px;")
-        var card = document.createElement("div");
-        card.setAttribute("class","card");
-        var img = document.createElement("img");
-        img.setAttribute("src",imglink);
-        img.setAttribute("height","300px");
-        var cardbody = document.createElement("div");
-        cardbody.setAttribute("class","card-body");
-        var name = document.createElement("div");
-        name.setAttribute("class","card-title");
-        name.setAttribute("style","font-size:35px;text-align:center;font-style:italic;");
-        name.innerHTML = data.items[i].name;
-        cardbody.append(name);
-        card.append(img,cardbody);
-        col.append(card);
-        row.append(col);
-        container.append(row);
-        document.body.append(container);
+    }
+    catch(error){
+        console.log(error);
     }
 }
